@@ -1,0 +1,29 @@
+.grid-container {
+    position: relative;
+    border: 2px solid black;
+    width: 616px;
+    height: 616px;
+    border-radius: 5px;
+    margin: auto;
+
+}
+.grid {
+    border: 8px solid blue;
+    background-color: grey;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.grid-square {
+    border: 1px solid #555;
+    width: 73px;
+    background-color: rgba(200, 0, 0, 0.5);
+    height: 73px;
+}
+
+.block {
+    /* background-color: blue; */
+    border: 6px solid cyan;
+    box-sizing: border-box;
+    position: absolute;
+}
