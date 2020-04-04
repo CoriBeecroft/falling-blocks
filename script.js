@@ -17,13 +17,14 @@ class Blocks extends React.Component {
         super(props);
 
         this.state = {
-            blockPositions: this.generateBlocks(),
+            blocks: this.generateBlocks(),
         }
 
         this.intersectsBlocks = this.intersectsBlocks.bind(this);
         this.intersects = this.intersects.bind(this);
         this.consolidateBlocks = this.consolidateBlocks.bind(this);
         this.addRow = this.addRow.bind(this);
+        this.enforceGravity = this.enforceGravity.bind(this);
     }
 
     intersectsBlocks(position, blocks) {
@@ -39,7 +40,7 @@ class Blocks extends React.Component {
     intersects(block1, block2) {
         if(block1.y != block2.y) {
             return false;
-        } if ((block1.x <= block2.x) && (block2.x <= (block1.x + block1.size))) {
+        } if ((block1.x <= block2.x) && (block2.x <= (block1.x + block1.size - 1))) {
             return true;
         } else if ((block2.x <= block1.x) && (block1.x <= (block2.x + block2.size - 1))) {
             return true;
@@ -57,6 +58,27 @@ class Blocks extends React.Component {
         }
 
         return sizes;
+    }
+
+    enforceGravity(blocks) {
+        let newBlocks = blocks.concat([]);
+        newBlocks.sort((a, b) => {
+            if(a.y < b.y) return 1;
+            if(a.y > b.y) return -1;
+            if(a.y == b.y) return 0;
+        })
+
+        newBlocks.forEach(block => {
+            let newY = block.y;
+            while(newY < 7 && !this.intersectsBlocks({ ...block, y: newY+1}, newBlocks)) {
+                newY++;
+            }
+            if(block.y != newY) { block.animate = true; }
+
+            block.y = newY;
+        })
+
+        return newBlocks;
     }
 
     consolidateBlocks(blocks) {
@@ -104,7 +126,8 @@ class Blocks extends React.Component {
             let position =  {
                 x: x,
                 y: y,
-                size: size
+                size: size,
+                color: "rgb(" + (Math.random()*128 + 128) + ", " + (Math.random()*128 + 128) + ", " + (Math.random()*128 + 128) + ")"
             }
             blocks.push(position);
             return position;
@@ -115,20 +138,16 @@ class Blocks extends React.Component {
 
     addRow() {
         this.setState(prevState => ({
-            blockPositions: prevState.blockPositions.map(b => ({
+            blocks: this.enforceGravity(prevState.blocks.map(b => ({
                 ...b,
                 y: b.y - 1
-            })).concat(this.generateBlocks())
+            })).concat(this.generateBlocks()))
         }));
     }
 
     render() {
         return <div className="blocks" onClick={ this.addRow }>
-            { this.state.blockPositions.map(block => <Block { ...{
-                size: block.size,
-                x: block.x,
-                y: block.y, 
-            }} />) }
+            { this.state.blocks.map(block => <Block { ...block } />) }
         </div>
     }
 }
@@ -139,7 +158,7 @@ const Block = props => {
         height: 75, 
         top: props.y * 75 + 8,
         left: props.x * 75 + 8, 
-        backgroundColor: "rgb(" + (Math.random()*128 + 128) + ", " + (Math.random()*128 + 128) + ", " + (Math.random()*128 + 128) + ")"
+        backgroundColor: props.color,
     }} />
 }
 
