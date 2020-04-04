@@ -7,23 +7,30 @@
     margin: auto;
 
 }
+
 .grid {
-    border: 8px solid blue;
-    background-color: grey;
+    border: 8px solid #0c0caf;
     display: flex;
     flex-wrap: wrap;
 }
 
 .grid-square {
-    border: 1px solid #555;
-    width: 73px;
-    background-color: rgba(200, 0, 0, 0.5);
-    height: 73px;
+    box-sizing: border-box;
+    width: 75px;
+    height: 75px;
+}
+
+.grid-square.color1 {
+    background-color: rgb(90, 96, 125);
+}
+
+.grid-square.color2 {
+    background-color: #8da3b9;
 }
 
 .block {
-    /* background-color: blue; */
-    border: 6px solid cyan;
+    border-radius: 3px;
     box-sizing: border-box;
     position: absolute;
+    box-shadow: inset 0 0 6px 2px #333;
 }
