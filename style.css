@@ -21,13 +21,19 @@
 }
 
 .grid-square.color1 {
-    background-color: rgb(90, 96, 125);
+    background-color:#45495f;
 }
 
 .grid-square.color2 {
-    background-color: #8da3b9;
+    background-color: #4c637b;
 }
-
+.blocks {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    background-color: #00000057;
+}
 .block {
     border-radius: 3px;
     box-sizing: border-box;

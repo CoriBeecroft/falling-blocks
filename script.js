@@ -16,20 +16,19 @@ class Blocks extends React.Component {
     constructor(props) {
         super(props);
 
-        this.blockPositions = [];
-        this.addBlockPosition = this.addBlockPosition.bind(this);
+        this.state = {
+            blockPositions: this.generateBlocks(),
+        }
+
         this.intersectsBlocks = this.intersectsBlocks.bind(this);
         this.intersects = this.intersects.bind(this);
         this.consolidateBlocks = this.consolidateBlocks.bind(this);
+        this.addRow = this.addRow.bind(this);
     }
 
-    addBlockPosition(position) {
-        this.blockPositions.push(position);
-    }
- 
-    intersectsBlocks(position) {
-        for(let i=0; i<this.blockPositions.length; i++) {
-            if(this.intersects(position, this.blockPositions[i])) {
+    intersectsBlocks(position, blocks) {
+        for(let i=0; i<blocks.length; i++) {
+            if(this.intersects(position, blocks[i])) {
                 return true;
             }
         }
@@ -60,36 +59,37 @@ class Blocks extends React.Component {
         return sizes;
     }
 
-    consolidateBlocks() {
-        return this.clearRight();
+    consolidateBlocks(blocks) {
+        return this.clearRight(blocks);
         // clearLeft();
         // clearCenter();
     }
 
-    clearRight() {
-        this.blockPositions.sort((b1, b2) => {
+    clearRight(blocks) {
+        blocks.sort((b1, b2) => {
             if(b2.x == b1.x) { return 0; }
             if(b2.x > b1.x) { return -1; }
             else { return 1; }
         })
 
         let position = 0;
-        for(let i=0; i<this.blockPositions.length; i++) {
-            this.blockPositions[i].x = position;
-            position = this.blockPositions[i].x + this.blockPositions[i].size;
+        for(let i=0; i<blocks.length; i++) {
+            blocks[i].x = position;
+            position = blocks[i].x + blocks[i].size;
         }
 
         return { min: position, max: 7 }
     }
 
     generateBlocks() {
-        let blocks = this.generateBlockSizes().map(size => {
-            let x = Math.floor(Math.random() * (8 - size));
+        const blocks = [];
+        this.generateBlockSizes().forEach((size) => {
+            let x = Math.floor(Math.random() * (8 - (size-1)));
             let y = 7;
             let count = 0; 
-            while(this.intersectsBlocks({ x: x, y: y, size: size }) && count < 200) {
+            while(this.intersectsBlocks({ x: x, y: y, size: size }, blocks) && count < 200) {
                 if(count > 10) {
-                    let freeRange = this.consolidateBlocks();
+                    let freeRange = this.consolidateBlocks(blocks);
                     let freeSize = freeRange.max - freeRange.min;
                     x = Math.floor(Math.random() * (freeSize - size) + freeRange.min);
                 } else {
@@ -106,16 +106,25 @@ class Blocks extends React.Component {
                 y: y,
                 size: size
             }
-            this.blockPositions.push(position);
+            blocks.push(position);
             return position;
         });
 
         return blocks;
     }
 
+    addRow() {
+        this.setState(prevState => ({
+            blockPositions: prevState.blockPositions.map(b => ({
+                ...b,
+                y: b.y - 1
+            })).concat(this.generateBlocks())
+        }));
+    }
+
     render() {
-        return <div className="blocks">
-            { this.generateBlocks().map(block => <Block { ...{
+        return <div className="blocks" onClick={ this.addRow }>
+            { this.state.blockPositions.map(block => <Block { ...{
                 size: block.size,
                 x: block.x,
                 y: block.y, 
