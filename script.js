@@ -25,6 +25,8 @@ class Blocks extends React.Component {
         this.consolidateBlocks = this.consolidateBlocks.bind(this);
         this.addRow = this.addRow.bind(this);
         this.enforceGravity = this.enforceGravity.bind(this);
+        this.setBlockPosition = this.setBlockPosition.bind(this);
+        this.blocksEqual = this.blocksEqual.bind(this);
     }
 
     intersectsBlocks(position, blocks) {
@@ -145,21 +147,62 @@ class Blocks extends React.Component {
         }));
     }
 
+    blocksEqual(b1, b2) {
+        return b1.x == b2.x && b1.y == b2.y;
+
+    }
+
+    setBlockPosition(block, x, y) {
+        const newBlocks = this.state.blocks.map(b =>
+            (this.blocksEqual(block, b) ? { ...b, x: x, y: y } : b));
+
+        this.setState({ blocks: this.enforceGravity(newBlocks) }, () => {
+            setTimeout(this.addRow, 300)
+        })
+    }
+
     render() {
-        return <div className="blocks" onClick={ this.addRow }>
-            { this.state.blocks.map(block => <Block { ...block } />) }
+        return <div className="blocks">
+            { this.state.blocks.map(block => <Block { ...{
+                ...block,
+                setBlockPosition: this.setBlockPosition
+            }} />) }
         </div>
     }
 }
 
-const Block = props => {
-    return <div className="block" style={{
-        width: props.size * 75,
-        height: 75, 
-        top: props.y * 75 + 8,
-        left: props.x * 75 + 8, 
-        backgroundColor: props.color,
-    }} />
+class Block extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+    }
+
+    render () {
+        return <div { ...{
+            className: "block",
+            draggable: true,
+            onDragStart: e => {
+                this.dragStartX = e.pageX;
+                this.dragStartY = e.pageY;
+            }, onDragEnd: e => {
+                this.props.setBlockPosition(
+                    { x: this.props.x, y: this.props.y },
+                    this.props.x + Math.round((e.pageX - this.dragStartX) / 75),
+                    this.props.y
+                );
+            },
+            style: {
+                width: this.props.size * 75,
+                height: 75,
+                top: this.props.y * 75 + 8,
+                left: this.props.x * 75 + 8,
+                backgroundColor: this.props.color,
+            }
+        }} />
+    }
+
 }
 
 ReactDOM.render(<FallingBlocks />, container);
